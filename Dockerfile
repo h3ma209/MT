@@ -16,12 +16,12 @@ COPY requirements.txt .
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code
-COPY translator.py server.py ./
-
-# Copy the model directory
+# Copy the model directory first to leverage cache (heavy operation)
 # NOTE: This assumes the "nllb-1.3b-int8" folder exists in the build context!
 COPY nllb-1.3b-int8 ./nllb-1.3b-int8
+
+# Copy the rest of the application code (changes more often)
+COPY translator.py server.py ./
 
 # Expose the port
 EXPOSE 8000

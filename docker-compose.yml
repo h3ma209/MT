@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  translator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: translator
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount source code for hot reloading (optional, requires uvicorn --reload which is not in CMD by default but nice to have)
+      # We are mounting them so you can edit locally without rebuilding immediately for code changes
+      - ./server.py:/app/server.py
+      - ./translator.py:/app/translator.py
+    restart: unless-stopped

@@ -39,7 +39,7 @@ async def translate(request: TranslationRequest):
         src_lang = request.source_lang if request.source_lang else "auto"
 
         result = translator.translate(
-            text=request.text, source_lang=src_lang, target_lang=request.target_langdock
+            text=request.text, source_lang=src_lang, target_lang=request.target_lang
         )
 
         return TranslationResponse(
