@@ -36,15 +36,25 @@ async def translate(request: TranslationRequest):
 
     try:
         # Handle empty source language or "auto"
-        src_lang = request.source_lang if request.source_lang else "auto"
+        input_src = request.source_lang if request.source_lang else "auto"
+        detected_src = input_src
+
+        if input_src == "auto":
+            # Detect language before translation
+            if isinstance(request.text, str):
+                detected_src = translator.detect_language(request.text)
+            elif isinstance(request.text, list) and request.text:
+                detected_src = translator.detect_language(request.text[0])
+            else:
+                detected_src = "en"  # Default fallback
 
         result = translator.translate(
-            text=request.text, source_lang=src_lang, target_lang=request.target_lang
+            text=request.text, source_lang=detected_src, target_lang=request.target_lang
         )
 
         return TranslationResponse(
             translated_text=result,
-            source_lang=src_lang,
+            source_lang=detected_src,
             target_lang=request.target_lang,
         )
     except Exception as e:
