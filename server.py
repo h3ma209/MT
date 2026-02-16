@@ -3,12 +3,20 @@ from pydantic import BaseModel
 from typing import List, Optional, Union
 from translator import PolyglotTranslator
 import uvicorn
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Polyglot Translator API")
 
 # Global translator instance
 translator = None
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 def startup_event():
