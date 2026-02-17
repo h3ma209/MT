@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 
 # Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip check || pip install --no-cache-dir -r requirements.txt
 
 # Copy the model directory first to leverage cache (heavy operation)
 # NOTE: This assumes the "nllb-1.3b-int8" folder exists in the build context!

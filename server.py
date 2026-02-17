@@ -1,11 +1,13 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict
 from translator import PolyglotTranslator
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Polyglot Translator API")
+
+supported_languages = ["en", "ar", "kmr", "ckb"]
 
 # Global translator instance
 translator = None
@@ -17,6 +19,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.on_event("startup")
 def startup_event():
@@ -35,6 +38,38 @@ class TranslationResponse(BaseModel):
     translated_text: Union[str, List[str]]
     source_lang: str
     target_lang: str
+
+
+class TranslationAllLangsResponse(BaseModel):
+    translated_text: Dict[str, Union[str, List[str]]]
+    source_lang: str
+    target_lang: List[str]
+
+
+@app.post("/translate/all", response_model=TranslationAllLangsResponse)
+async def translate_all(request: TranslationRequest):
+    if not translator:
+        raise HTTPException(status_code=503, detail="Translator not initialized")
+    try:
+        resp = {}
+        detected_language = translator.detect_language(request.text)
+        for lang in supported_languages:
+            if lang == detected_language:
+                continue
+            else:
+                resp[lang] = translator.translate(
+                    text=request.text,
+                    source_lang=detected_language,
+                    target_lang=lang,
+                )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    return TranslationAllLangsResponse(
+        translated_text=resp,
+        source_lang=detected_language,
+        target_lang=list(resp.keys()),
+    )
 
 
 @app.post("/translate", response_model=TranslationResponse)
