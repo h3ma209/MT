@@ -15,3 +15,10 @@ services:
       - ./translator.py:/app/translator.py
       - ./nllb-1.3b-int8:/app/nllb-1.3b-int8
     restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
