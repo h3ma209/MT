@@ -13,4 +13,5 @@ services:
       # We are mounting them so you can edit locally without rebuilding immediately for code changes
       - ./server.py:/app/server.py
       - ./translator.py:/app/translator.py
+      - ./nllb-1.3b-int8:/app/nllb-1.3b-int8
     restart: unless-stopped

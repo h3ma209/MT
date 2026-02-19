@@ -16,9 +16,8 @@ COPY requirements.txt .
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the model directory first to leverage cache (heavy operation)
-# NOTE: This assumes the "nllb-1.3b-int8" folder exists in the build context!
-COPY nllb-1.3b-int8 ./nllb-1.3b-int8
+# The model will be downloaded by the application on startup if not present
+# COPY nllb-1.3b-int8 ./nllb-1.3b-int8
 
 # Copy the rest of the application code (changes more often)
 COPY translator.py server.py ./

@@ -52,7 +52,12 @@ async def translate_all(request: TranslationRequest):
         raise HTTPException(status_code=503, detail="Translator not initialized")
     try:
         resp = {}
-        detected_language = translator.detect_language(request.text)
+        if isinstance(request.text, str):
+            detected_language = translator.detect_language(request.text)
+        elif isinstance(request.text, list) and request.text:
+            detected_language = translator.detect_language(request.text[0])
+        else:
+            detected_language = "en"
         for lang in supported_languages:
             if lang == detected_language:
                 continue
