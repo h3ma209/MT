@@ -1,4 +1,5 @@
 import os
+import shutil
 import time
 from typing import List, Union
 import ctranslate2
@@ -63,15 +64,44 @@ class PolyglotTranslator:
             )
 
             try:
+                # Use a temporary directory for conversion to avoid "Device busy" errors
+                # if output_dir is a mounted volume.
+                temp_dir = f"{self.output_dir}_tmp"
+
+                # Clean up temp dir if it exists from a previous failed run
+                if os.path.exists(temp_dir):
+                    shutil.rmtree(temp_dir)
+
+                print(f"Converting to temporary directory: {temp_dir}...")
                 converter = ctranslate2.converters.TransformersConverter(
                     self.model_name
                 )
-                converter.convert(self.output_dir, quantization="int8", force=True)
-                print("Model conversion complete.")
+                converter.convert(temp_dir, quantization="int8", force=True)
+
+                print(f"Moving model files to {self.output_dir}...")
+
+                # Ensure output directory exists
+                os.makedirs(self.output_dir, exist_ok=True)
+
+                # Move files from temp_dir to output_dir
+                for item in os.listdir(temp_dir):
+                    s = os.path.join(temp_dir, item)
+                    d = os.path.join(self.output_dir, item)
+                    if os.path.exists(d):
+                        if os.path.isdir(d):
+                            shutil.rmtree(d)
+                        else:
+                            os.remove(d)
+                    shutil.move(s, d)
+
+                # Cleanup temp directory
+                shutil.rmtree(temp_dir)
+                print("Model conversion and setup complete.")
+
             except Exception as e:
                 print(f"Error during conversion: {e}")
                 raise RuntimeError(
-                    "Failed to convert model. Ensure dependencies are correct."
+                    f"Failed to convert model. Ensure dependencies are correct. Error: {e}"
                 )
 
     def detect_language(self, text: str) -> str:
