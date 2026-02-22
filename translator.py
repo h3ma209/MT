@@ -209,6 +209,8 @@ class PolyglotTranslator:
             target_prefix=[target_prefix] * len(source),
             beam_size=5,  # beam size
             num_hypotheses=1,
+            repetition_penalty=1.2,
+            no_repeat_ngram_size=3,
         )
 
         # Decode
